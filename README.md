@@ -130,11 +130,11 @@ Runs a command and displays live resource usage alongside its output in the term
 
 ### 2.2. `run`
 
-- [ ] Spawn subprocess and execute command
-- [ ] Sample CPU & memory usage at configurable interval (`-i`)
-- [ ] Enforce maximum execution time (`-t / --timeout`)
-- [ ] Save profiling results to JSON (`--json`)
-- [ ] Suppress command stdout (`--silent`)
+- [x] Spawn subprocess and execute command
+- [x] Sample CPU & memory usage at configurable interval (`-i`)
+- [x] Enforce maximum execution time (`-t / --timeout`)
+- [x] Save profiling results to JSON (`--json`)
+- [x] Suppress command stdout (`--silent`)
 
 ### 2.3. `pid`
 
