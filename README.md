@@ -123,10 +123,10 @@ Runs a command and displays live resource usage alongside its output in the term
 
 ### 2.1. CLI
 
-- [ ] Root command entry point (`cavira`)
-- [ ] Global option: `--no-color`
-- [ ] Global option: `--quiet`
-- [ ] Global option: `--config <path>`
+- [x] Root command entry point (`cavira`)
+- [x] Global option: `--no-color`
+- [x] Global option: `--quiet`
+- [x] Global option: `--config <path>`
 
 ### 2.2. `run`
 
