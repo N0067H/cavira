@@ -3,6 +3,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(about = "Spawn a command and profile its resource usage until it exits")]
 pub struct RunArgs {
+    #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
     pub command: Vec<String>,
 
     #[arg(short, long, value_name = "ms", default_value = "100")]
