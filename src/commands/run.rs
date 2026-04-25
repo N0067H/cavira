@@ -24,18 +24,29 @@ struct RunResult {
     samples: Vec<Sample>,
 }
 
-pub fn execute(args: RunArgs) {
-    let (program, cmd_args) = args.command.split_first().unwrap_or_else(|| {
+const SHELL_OPS: &[&str] = &["&&", "||", ";", "|", ">", ">>", "<"];
+
+fn spawn_args(tokens: &[String]) -> (String, Vec<String>) {
+    if tokens.is_empty() {
         eprintln!("error: no command given");
         std::process::exit(1);
-    });
+    }
+    if tokens.iter().any(|t| SHELL_OPS.contains(&t.as_str())) {
+        ("sh".to_string(), vec!["-c".to_string(), tokens.join(" ")])
+    } else {
+        (tokens[0].clone(), tokens[1..].to_vec())
+    }
+}
 
-    let mut child = Command::new(program)
-        .args(cmd_args)
+pub fn execute(args: RunArgs) {
+    let (program, cmd_args) = spawn_args(&args.command);
+
+    let mut child = Command::new(&program)
+        .args(&cmd_args)
         .stdout(if args.silent { Stdio::null() } else { Stdio::inherit() })
         .spawn()
         .unwrap_or_else(|e| {
-            eprintln!("error: failed to spawn '{}': {e}", program);
+            eprintln!("error: failed to spawn '{program}': {e}");
             std::process::exit(1);
         });
 
