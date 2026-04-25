@@ -138,10 +138,10 @@ Runs a command and displays live resource usage alongside its output in the term
 
 ### 2.3. `pid`
 
-- [ ] Attach to an existing process by PID
-- [ ] Sample CPU & memory usage at configurable interval (`-i`)
-- [ ] Stop tracking after given duration (`--duration`)
-- [ ] Save profiling results to JSON (`--json`)
+- [x] Attach to an existing process by PID
+- [x] Sample CPU & memory usage at configurable interval (`-i`)
+- [x] Stop tracking after given duration (`--duration`)
+- [x] Save profiling results to JSON (`--json`)
 
 ### 2.4. `compare`
 
