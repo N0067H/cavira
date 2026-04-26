@@ -53,7 +53,7 @@ pub fn execute(args: PidArgs) {
             }
         }
 
-        sys.refresh_processes(ProcessesToUpdate::Some(&[pid]), false);
+        sys.refresh_processes(ProcessesToUpdate::Some(&[pid]), true);
 
         match sys.process(pid) {
             Some(proc) => {
