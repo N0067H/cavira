@@ -9,6 +9,7 @@ fn main() {
     match cli.command {
         Commands::Run(args) => commands::run::execute(args),
         Commands::Pid(args) => commands::pid::execute(args),
+        Commands::Compare(args) => commands::compare::execute(args),
         _ => eprintln!("not yet implemented"),
     }
 }

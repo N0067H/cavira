@@ -145,11 +145,11 @@ Runs a command and displays live resource usage alongside its output in the term
 
 ### 2.4. `compare`
 
-- [ ] Load two run results from JSON files or run IDs
-- [ ] Compare by CPU usage (`--metric cpu`)
-- [ ] Compare by memory usage (`--metric mem`)
-- [ ] Compare by execution time (`--metric time`)
-- [ ] Render side-by-side diff output
+- [x] Load two run results from JSON files or run IDs
+- [x] Compare by CPU usage (`--metric cpu`)
+- [x] Compare by memory usage (`--metric mem`)
+- [x] Compare by execution time (`--metric time`)
+- [x] Render side-by-side diff output
 
 ### 2.5. `history`
 
