@@ -153,11 +153,11 @@ Runs a command and displays live resource usage alongside its output in the term
 
 ### 2.5. `history`
 
-- [ ] Persist run records to local storage
-- [ ] List all recorded runs
-- [ ] Limit output to most recent N entries (`-n / --limit`)
-- [ ] Filter entries by keyword (`--filter`)
-- [ ] Output history as JSON (`--json`)
+- [x] Persist run records to local storage
+- [x] List all recorded runs
+- [x] Limit output to most recent N entries (`-n / --limit`)
+- [x] Filter entries by keyword (`--filter`)
+- [x] Output history as JSON (`--json`)
 
 ### 2.6. `inspect`
 

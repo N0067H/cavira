@@ -116,6 +116,20 @@ pub fn execute(args: RunArgs) {
         });
         println!("results saved to {path}");
     }
+
+    crate::store::append(crate::store::HistoryEntry {
+        id: crate::store::now_ms().to_string(),
+        timestamp: crate::store::now_secs(),
+        source: "run".to_string(),
+        command: Some(result.command.clone()),
+        pid: None,
+        process_name: None,
+        duration_ms: result.duration_ms,
+        peak_cpu: result.peak_cpu,
+        avg_cpu: result.avg_cpu,
+        peak_memory_bytes: result.peak_memory_bytes,
+        avg_memory_bytes: result.avg_memory_bytes,
+    });
 }
 
 fn print_summary(r: &RunResult) {
