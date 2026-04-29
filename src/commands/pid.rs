@@ -24,6 +24,7 @@ struct PidResult {
 }
 
 pub fn execute(args: PidArgs) {
+    let id = crate::store::now_ms().to_string();
     let pid = Pid::from_u32(args.pid);
     let duration_limit = args.duration.as_deref().map(parse_duration);
     let interval = Duration::from_millis(args.interval);
@@ -95,9 +96,29 @@ pub fn execute(args: PidArgs) {
         println!("results saved to {path}");
     }
 
+    let timestamp = crate::store::now_secs();
+    crate::store::save_run(&crate::store::RunDetail {
+        id: id.clone(),
+        timestamp,
+        source: "pid".to_string(),
+        command: None,
+        pid: Some(result.pid),
+        process_name: Some(result.process_name.clone()),
+        exit_code: None,
+        duration_ms: result.duration_ms,
+        peak_cpu: result.peak_cpu,
+        avg_cpu: result.avg_cpu,
+        peak_memory_bytes: result.peak_memory_bytes,
+        avg_memory_bytes: result.avg_memory_bytes,
+        samples: result.samples.iter().map(|s| crate::store::DetailSample {
+            timestamp_ms: s.timestamp_ms,
+            cpu_percent: s.cpu_percent,
+            memory_bytes: s.memory_bytes,
+        }).collect(),
+    });
     crate::store::append(crate::store::HistoryEntry {
-        id: crate::store::now_ms().to_string(),
-        timestamp: crate::store::now_secs(),
+        id,
+        timestamp,
         source: "pid".to_string(),
         command: None,
         pid: Some(result.pid),

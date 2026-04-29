@@ -39,6 +39,7 @@ fn spawn_args(tokens: &[String]) -> (String, Vec<String>) {
 }
 
 pub fn execute(args: RunArgs) {
+    let id = crate::store::now_ms().to_string();
     let (program, cmd_args) = spawn_args(&args.command);
 
     let mut child = Command::new(&program)
@@ -117,9 +118,29 @@ pub fn execute(args: RunArgs) {
         println!("results saved to {path}");
     }
 
+    let timestamp = crate::store::now_secs();
+    crate::store::save_run(&crate::store::RunDetail {
+        id: id.clone(),
+        timestamp,
+        source: "run".to_string(),
+        command: Some(result.command.clone()),
+        pid: None,
+        process_name: None,
+        exit_code: result.exit_code,
+        duration_ms: result.duration_ms,
+        peak_cpu: result.peak_cpu,
+        avg_cpu: result.avg_cpu,
+        peak_memory_bytes: result.peak_memory_bytes,
+        avg_memory_bytes: result.avg_memory_bytes,
+        samples: result.samples.iter().map(|s| crate::store::DetailSample {
+            timestamp_ms: s.timestamp_ms,
+            cpu_percent: s.cpu_percent,
+            memory_bytes: s.memory_bytes,
+        }).collect(),
+    });
     crate::store::append(crate::store::HistoryEntry {
-        id: crate::store::now_ms().to_string(),
-        timestamp: crate::store::now_secs(),
+        id,
+        timestamp,
         source: "run".to_string(),
         command: Some(result.command.clone()),
         pid: None,

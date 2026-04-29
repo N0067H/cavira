@@ -4,4 +4,7 @@ use clap::Parser;
 #[command(about = "Show full profiling data for a specific run")]
 pub struct InspectArgs {
     pub run_id: String,
+
+    #[arg(long)]
+    pub json: bool,
 }
