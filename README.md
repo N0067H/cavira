@@ -161,8 +161,8 @@ Runs a command and displays live resource usage alongside its output in the term
 
 ### 2.6. `inspect`
 
-- [ ] Look up a run record by ID
-- [ ] Display full profiling data for the run
+- [x] Look up a run record by ID
+- [x] Display full profiling data for the run
 
 ### 2.7. `live`
 
