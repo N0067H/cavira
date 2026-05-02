@@ -91,7 +91,10 @@ const W_VAL: usize = 18;
 const W_DELTA: usize = 22;
 
 fn print_row(label: &str, v1: &str, v2: &str, delta: &str) {
-    println!("{:<W_LABEL$}  {:<W_VAL$}  {:<W_VAL$}  {}", label, v1, v2, delta);
+    println!(
+        "{:<W_LABEL$}  {:<W_VAL$}  {:<W_VAL$}  {}",
+        label, v1, v2, delta
+    );
 }
 
 fn print_sep() {
@@ -129,7 +132,12 @@ pub fn execute(args: CompareArgs) {
     if show_time {
         let v1 = format!("{:.3}s", r1.duration_ms as f64 / 1000.0);
         let v2 = format!("{:.3}s", r2.duration_ms as f64 / 1000.0);
-        print_row("duration", &v1, &v2, &delta_sec(r1.duration_ms, r2.duration_ms));
+        print_row(
+            "duration",
+            &v1,
+            &v2,
+            &delta_sec(r1.duration_ms, r2.duration_ms),
+        );
     }
 
     if show_cpu {
@@ -145,10 +153,20 @@ pub fn execute(args: CompareArgs) {
     if show_mem {
         let v1 = fmt_bytes(r1.peak_memory_bytes);
         let v2 = fmt_bytes(r2.peak_memory_bytes);
-        print_row("peak memory", &v1, &v2, &delta_bytes(r1.peak_memory_bytes, r2.peak_memory_bytes));
+        print_row(
+            "peak memory",
+            &v1,
+            &v2,
+            &delta_bytes(r1.peak_memory_bytes, r2.peak_memory_bytes),
+        );
 
         let v1 = fmt_bytes(r1.avg_memory_bytes);
         let v2 = fmt_bytes(r2.avg_memory_bytes);
-        print_row("avg memory", &v1, &v2, &delta_bytes(r1.avg_memory_bytes, r2.avg_memory_bytes));
+        print_row(
+            "avg memory",
+            &v1,
+            &v2,
+            &delta_bytes(r1.avg_memory_bytes, r2.avg_memory_bytes),
+        );
     }
 }

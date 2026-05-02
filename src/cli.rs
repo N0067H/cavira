@@ -14,7 +14,11 @@ use pid::PidArgs;
 use run::RunArgs;
 
 #[derive(Parser, Debug)]
-#[command(name = "cavira", version, about = "Cavira process — execution analysis tool")]
+#[command(
+    name = "cavira",
+    version,
+    about = "Cavira process — execution analysis tool"
+)]
 pub struct Cli {
     #[arg(long, global = true)]
     pub no_color: bool,

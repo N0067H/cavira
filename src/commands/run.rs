@@ -1,9 +1,9 @@
 use crate::cli::run::RunArgs;
 use serde::Serialize;
-use sysinfo::{Pid, ProcessesToUpdate, System};
 use std::process::{Command, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
+use sysinfo::{Pid, ProcessesToUpdate, System};
 
 #[derive(Serialize)]
 struct Sample {
@@ -44,7 +44,11 @@ pub fn execute(args: RunArgs) {
 
     let mut child = Command::new(&program)
         .args(&cmd_args)
-        .stdout(if args.silent { Stdio::null() } else { Stdio::inherit() })
+        .stdout(if args.silent {
+            Stdio::null()
+        } else {
+            Stdio::inherit()
+        })
         .spawn()
         .unwrap_or_else(|e| {
             eprintln!("error: failed to spawn '{program}': {e}");
@@ -66,11 +70,11 @@ pub fn execute(args: RunArgs) {
 
         let elapsed = start.elapsed();
 
-        if let Some(limit) = timeout_dur {
-            if elapsed >= limit {
-                let _ = child.kill();
-                break;
-            }
+        if let Some(limit) = timeout_dur
+            && elapsed >= limit
+        {
+            let _ = child.kill();
+            break;
         }
 
         sys.refresh_processes(ProcessesToUpdate::Some(&[pid]), false);
@@ -132,11 +136,15 @@ pub fn execute(args: RunArgs) {
         avg_cpu: result.avg_cpu,
         peak_memory_bytes: result.peak_memory_bytes,
         avg_memory_bytes: result.avg_memory_bytes,
-        samples: result.samples.iter().map(|s| crate::store::DetailSample {
-            timestamp_ms: s.timestamp_ms,
-            cpu_percent: s.cpu_percent,
-            memory_bytes: s.memory_bytes,
-        }).collect(),
+        samples: result
+            .samples
+            .iter()
+            .map(|s| crate::store::DetailSample {
+                timestamp_ms: s.timestamp_ms,
+                cpu_percent: s.cpu_percent,
+                memory_bytes: s.memory_bytes,
+            })
+            .collect(),
     });
     crate::store::append(crate::store::HistoryEntry {
         id,
@@ -156,7 +164,10 @@ pub fn execute(args: RunArgs) {
 fn print_summary(r: &RunResult) {
     println!("command:     {}", r.command);
     println!("duration:    {:.3}s", r.duration_ms as f64 / 1000.0);
-    println!("exit code:   {}", r.exit_code.map_or("-".to_string(), |c| c.to_string()));
+    println!(
+        "exit code:   {}",
+        r.exit_code.map_or("-".to_string(), |c| c.to_string())
+    );
     println!("peak cpu:    {:.1}%", r.peak_cpu);
     println!("avg cpu:     {:.1}%", r.avg_cpu);
     println!("peak memory: {}", fmt_bytes(r.peak_memory_bytes));

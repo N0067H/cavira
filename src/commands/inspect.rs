@@ -100,7 +100,11 @@ fn fmt_timestamp(secs: u64) -> String {
 
 fn days_to_ymd(z: i64) -> (i32, u32, u32) {
     let z = z + 719468;
-    let era = if z >= 0 { z / 146097 } else { (z - 146096) / 146097 };
+    let era = if z >= 0 {
+        z / 146097
+    } else {
+        (z - 146096) / 146097
+    };
     let doe = (z - era * 146097) as u64;
     let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
     let y = yoe as i64 + era * 400;

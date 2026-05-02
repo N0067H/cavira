@@ -1,8 +1,8 @@
 use crate::cli::pid::PidArgs;
 use serde::Serialize;
-use sysinfo::{Pid, ProcessesToUpdate, System};
 use std::thread;
 use std::time::{Duration, Instant};
+use sysinfo::{Pid, ProcessesToUpdate, System};
 
 #[derive(Serialize)]
 struct Sample {
@@ -48,10 +48,10 @@ pub fn execute(args: PidArgs) {
 
         let elapsed = start.elapsed();
 
-        if let Some(limit) = duration_limit {
-            if elapsed >= limit {
-                break;
-            }
+        if let Some(limit) = duration_limit
+            && elapsed >= limit
+        {
+            break;
         }
 
         sys.refresh_processes(ProcessesToUpdate::Some(&[pid]), true);
@@ -110,11 +110,15 @@ pub fn execute(args: PidArgs) {
         avg_cpu: result.avg_cpu,
         peak_memory_bytes: result.peak_memory_bytes,
         avg_memory_bytes: result.avg_memory_bytes,
-        samples: result.samples.iter().map(|s| crate::store::DetailSample {
-            timestamp_ms: s.timestamp_ms,
-            cpu_percent: s.cpu_percent,
-            memory_bytes: s.memory_bytes,
-        }).collect(),
+        samples: result
+            .samples
+            .iter()
+            .map(|s| crate::store::DetailSample {
+                timestamp_ms: s.timestamp_ms,
+                cpu_percent: s.cpu_percent,
+                memory_bytes: s.memory_bytes,
+            })
+            .collect(),
     });
     crate::store::append(crate::store::HistoryEntry {
         id,

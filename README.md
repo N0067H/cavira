@@ -115,7 +115,7 @@ Prints full profiling data for a single recorded run.
 cavira live <COMMAND>
 ```
 
-Runs a command and displays live resource usage alongside its output in the terminal. This subcommand is planned for a future release.
+Runs a command and displays live resource usage alongside its output in the terminal.
 
 ---
 
@@ -166,5 +166,5 @@ Runs a command and displays live resource usage alongside its output in the term
 
 ### 2.7. `live`
 
-- [ ] Run command with real-time resource overlay
-- [ ] Update CPU & memory display on each sample tick
+- [x] Run command with real-time resource overlay
+- [x] Update CPU & memory display on each sample tick

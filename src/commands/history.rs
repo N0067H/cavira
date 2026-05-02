@@ -7,8 +7,16 @@ pub fn execute(args: HistoryArgs) {
     if let Some(kw) = &args.filter {
         let kw = kw.to_lowercase();
         entries.retain(|e| {
-            e.command.as_deref().unwrap_or("").to_lowercase().contains(&kw)
-                || e.process_name.as_deref().unwrap_or("").to_lowercase().contains(&kw)
+            e.command
+                .as_deref()
+                .unwrap_or("")
+                .to_lowercase()
+                .contains(&kw)
+                || e.process_name
+                    .as_deref()
+                    .unwrap_or("")
+                    .to_lowercase()
+                    .contains(&kw)
         });
     }
 
@@ -40,8 +48,8 @@ fn print_table(entries: &[HistoryEntry]) {
     const W_MEM: usize = 9;
 
     println!(
-        "  {:<W_ID$}  {:<W_TS$}  {:<W_SRC$}  {:<W_CMD$}  {:<W_DUR$}  {:<W_CPU$}  {}",
-        "id", "timestamp", "src", "command / process", "duration", "peak cpu", "peak mem"
+        "  {:<W_ID$}  {:<W_TS$}  {:<W_SRC$}  {:<W_CMD$}  {:<W_DUR$}  {:<W_CPU$}  peak mem",
+        "id", "timestamp", "src", "command / process", "duration", "peak cpu"
     );
     println!(
         "  {:─<W_ID$}  {:─<W_TS$}  {:─<W_SRC$}  {:─<W_CMD$}  {:─<W_DUR$}  {:─<W_CPU$}  {:─<W_MEM$}",
@@ -103,7 +111,11 @@ fn fmt_timestamp(secs: u64) -> String {
 // https://howardhinnant.github.io/date_algorithms.html
 fn days_to_ymd(z: i64) -> (i32, u32, u32) {
     let z = z + 719468;
-    let era = if z >= 0 { z / 146097 } else { (z - 146096) / 146097 };
+    let era = if z >= 0 {
+        z / 146097
+    } else {
+        (z - 146096) / 146097
+    };
     let doe = (z - era * 146097) as u64;
     let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
     let y = yoe as i64 + era * 400;

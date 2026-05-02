@@ -13,6 +13,6 @@ fn main() {
         Commands::Compare(args) => commands::compare::execute(args),
         Commands::History(args) => commands::history::execute(args),
         Commands::Inspect(args) => commands::inspect::execute(args),
-        _ => eprintln!("not yet implemented"),
+        Commands::Live(args) => commands::live::execute(args),
     }
 }
