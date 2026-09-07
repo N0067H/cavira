@@ -1,4 +1,5 @@
 use crate::cli::live::LiveArgs;
+use crate::commands::sample_stats::SampleStats;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 use std::thread;
@@ -103,8 +104,7 @@ pub fn execute(args: LiveArgs) {
     let mut sys = System::new();
     let start = Instant::now();
 
-    let mut cpu_samples: Vec<f32> = Vec::new();
-    let mut mem_samples: Vec<u64> = Vec::new();
+    let mut stats = SampleStats::default();
     let mut detail_samples: Vec<crate::store::DetailSample> = Vec::new();
 
     sys.refresh_processes(ProcessesToUpdate::Some(&[pid]), false);
@@ -118,8 +118,7 @@ pub fn execute(args: LiveArgs) {
         if let Some(proc) = sys.process(pid) {
             let cpu = proc.cpu_usage();
             let mem = proc.memory();
-            cpu_samples.push(cpu);
-            mem_samples.push(mem);
+            stats.record(cpu, mem);
             detail_samples.push(crate::store::DetailSample {
                 timestamp_ms: elapsed.as_millis() as u64,
                 cpu_percent: cpu,
@@ -150,18 +149,10 @@ pub fn execute(args: LiveArgs) {
         t.leave();
     }
 
-    let peak_cpu = cpu_samples.iter().cloned().fold(0.0f32, f32::max);
-    let avg_cpu = if cpu_samples.is_empty() {
-        0.0
-    } else {
-        cpu_samples.iter().sum::<f32>() / cpu_samples.len() as f32
-    };
-    let peak_mem = mem_samples.iter().cloned().max().unwrap_or(0);
-    let avg_mem = if mem_samples.is_empty() {
-        0
-    } else {
-        mem_samples.iter().sum::<u64>() / mem_samples.len() as u64
-    };
+    let peak_cpu = stats.peak_cpu();
+    let avg_cpu = stats.avg_cpu();
+    let peak_mem = stats.peak_memory_bytes();
+    let avg_mem = stats.avg_memory_bytes();
 
     println!("command:     {cmd_str}");
     println!("duration:    {:.3}s", duration_ms as f64 / 1000.0);
