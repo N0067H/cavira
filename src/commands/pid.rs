@@ -1,4 +1,5 @@
 use crate::cli::pid::PidArgs;
+use crate::commands::sample_stats::SampleStats;
 use serde::Serialize;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -41,6 +42,7 @@ pub fn execute(args: PidArgs) {
     };
 
     let mut samples: Vec<Sample> = Vec::new();
+    let mut stats = SampleStats::default();
     let start = Instant::now();
 
     loop {
@@ -58,11 +60,13 @@ pub fn execute(args: PidArgs) {
 
         match sys.process(pid) {
             Some(proc) => {
-                samples.push(Sample {
+                let sample = Sample {
                     timestamp_ms: elapsed.as_millis() as u64,
                     cpu_percent: proc.cpu_usage(),
                     memory_bytes: proc.memory(),
-                });
+                };
+                stats.record(sample.cpu_percent, sample.memory_bytes);
+                samples.push(sample);
             }
             None => break,
         }
@@ -70,19 +74,14 @@ pub fn execute(args: PidArgs) {
 
     let duration_ms = start.elapsed().as_millis() as u64;
 
-    let peak_cpu = samples.iter().map(|s| s.cpu_percent).fold(0.0f32, f32::max);
-    let avg_cpu = avg_f32(samples.iter().map(|s| s.cpu_percent));
-    let peak_memory_bytes = samples.iter().map(|s| s.memory_bytes).max().unwrap_or(0);
-    let avg_memory_bytes = avg_u64(samples.iter().map(|s| s.memory_bytes));
-
     let result = PidResult {
         pid: args.pid,
         process_name,
         duration_ms,
-        peak_cpu,
-        avg_cpu,
-        peak_memory_bytes,
-        avg_memory_bytes,
+        peak_cpu: stats.peak_cpu(),
+        avg_cpu: stats.avg_cpu(),
+        peak_memory_bytes: stats.peak_memory_bytes(),
+        avg_memory_bytes: stats.avg_memory_bytes(),
         samples,
     };
 
@@ -164,14 +163,4 @@ fn fmt_bytes(b: u64) -> String {
         b if b >= 1 << 10 => format!("{:.1} KB", b as f64 / (1 << 10) as f64),
         b => format!("{b} B"),
     }
-}
-
-fn avg_f32(iter: impl Iterator<Item = f32>) -> f32 {
-    let (sum, count) = iter.fold((0.0f32, 0usize), |(s, n), v| (s + v, n + 1));
-    if count == 0 { 0.0 } else { sum / count as f32 }
-}
-
-fn avg_u64(iter: impl Iterator<Item = u64>) -> u64 {
-    let (sum, count) = iter.fold((0u64, 0usize), |(s, n), v| (s + v, n + 1));
-    if count == 0 { 0 } else { sum / count as u64 }
 }
