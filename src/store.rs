@@ -67,8 +67,8 @@ fn runs_dir() -> PathBuf {
 pub fn save_run(detail: &RunDetail) {
     let dir = runs_dir();
     let _ = std::fs::create_dir_all(&dir);
-    if let Ok(json) = serde_json::to_string_pretty(detail) {
-        let _ = std::fs::write(dir.join(format!("{}.json", detail.id)), json);
+    if let Ok(mut file) = File::create(dir.join(format!("{}.json", detail.id))) {
+        let _ = serde_json::to_writer(&mut file, detail);
     }
 }
 
