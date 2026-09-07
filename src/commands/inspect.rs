@@ -44,21 +44,36 @@ fn print_detail(d: &RunDetail) {
     }
 
     println!();
-    let cpu_vals: Vec<f64> = d.samples.iter().map(|s| s.cpu_percent as f64).collect();
-    let mem_vals: Vec<f64> = d.samples.iter().map(|s| s.memory_bytes as f64).collect();
-    println!("cpu (%)    {}", sparkline(&cpu_vals, 64));
-    println!("memory     {}", sparkline(&mem_vals, 64));
+    println!(
+        "cpu (%)    {}",
+        sparkline(&d.samples, 64, |s| s.cpu_percent as f64)
+    );
+    println!(
+        "memory     {}",
+        sparkline(&d.samples, 64, |s| s.memory_bytes as f64)
+    );
 }
 
-fn sparkline(values: &[f64], max_width: usize) -> String {
+fn sparkline<T>(values: &[T], max_width: usize, value: impl Fn(&T) -> f64 + Copy) -> String {
     const BLOCKS: &[char] = &['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
-    let sampled = downsample(values, max_width);
-    let min = sampled.iter().cloned().fold(f64::INFINITY, f64::min);
-    let max = sampled.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+
+    let width = values.len().min(max_width);
+    if width == 0 {
+        return String::new();
+    }
+
+    let mut min = f64::INFINITY;
+    let mut max = f64::NEG_INFINITY;
+    for i in 0..width {
+        let v = sparkline_value(values, width, i, value);
+        min = min.min(v);
+        max = max.max(v);
+    }
+
     let range = max - min;
-    sampled
-        .iter()
-        .map(|&v| {
+    (0..width)
+        .map(|i| {
+            let v = sparkline_value(values, width, i, value);
             let norm = if range == 0.0 { 0.0 } else { (v - min) / range };
             let idx = (norm * (BLOCKS.len() - 1) as f64).round() as usize;
             BLOCKS[idx.min(BLOCKS.len() - 1)]
@@ -66,18 +81,42 @@ fn sparkline(values: &[f64], max_width: usize) -> String {
         .collect()
 }
 
-fn downsample(values: &[f64], max: usize) -> Vec<f64> {
-    if values.len() <= max {
-        return values.to_vec();
+fn sparkline_value<T>(
+    values: &[T],
+    width: usize,
+    index: usize,
+    value: impl Fn(&T) -> f64 + Copy,
+) -> f64 {
+    if values.len() <= width {
+        return value(&values[index]);
     }
-    (0..max)
-        .map(|i| {
-            let start = i * values.len() / max;
-            let end = (i + 1) * values.len() / max;
-            let slice = &values[start..end];
-            slice.iter().sum::<f64>() / slice.len() as f64
-        })
-        .collect()
+
+    let start = index * values.len() / width;
+    let end = (index + 1) * values.len() / width;
+    values[start..end].iter().map(value).sum::<f64>() / (end - start) as f64
+}
+
+#[cfg(test)]
+mod tests {
+    use super::sparkline;
+
+    #[test]
+    fn sparkline_handles_empty_values() {
+        let values: [f64; 0] = [];
+        assert_eq!(sparkline(&values, 64, |v| *v), "");
+    }
+
+    #[test]
+    fn sparkline_handles_constant_values() {
+        let values = [5.0, 5.0, 5.0];
+        assert_eq!(sparkline(&values, 64, |v| *v), "▁▁▁");
+    }
+
+    #[test]
+    fn sparkline_downsamples_without_changing_shape() {
+        let values = [0.0, 2.0, 4.0, 6.0];
+        assert_eq!(sparkline(&values, 2, |v| *v), "▁█");
+    }
 }
 
 fn fmt_bytes(b: u64) -> String {
