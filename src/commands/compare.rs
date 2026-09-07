@@ -1,4 +1,5 @@
 use crate::cli::compare::{CompareArgs, MetricType};
+use crate::store;
 use serde::Deserialize;
 use std::path::Path;
 
@@ -17,13 +18,39 @@ struct RunRecord {
     avg_memory_bytes: u64,
 }
 
-fn load(path: &str) -> RunRecord {
+impl From<store::RunDetail> for RunRecord {
+    fn from(detail: store::RunDetail) -> Self {
+        Self {
+            command: detail.command,
+            pid: detail.pid,
+            process_name: detail.process_name,
+            duration_ms: detail.duration_ms,
+            peak_cpu: detail.peak_cpu,
+            avg_cpu: detail.avg_cpu,
+            peak_memory_bytes: detail.peak_memory_bytes,
+            avg_memory_bytes: detail.avg_memory_bytes,
+        }
+    }
+}
+
+fn load(input: &str) -> RunRecord {
+    if Path::new(input).exists() {
+        return load_path(input);
+    }
+
+    store::load_run(input).map(Into::into).unwrap_or_else(|| {
+        eprintln!("error: failed to find run file or saved run id '{input}'");
+        std::process::exit(1);
+    })
+}
+
+fn load_path(path: &str) -> RunRecord {
     let content = std::fs::read_to_string(path).unwrap_or_else(|e| {
-        eprintln!("error: failed to read '{path}': {e}");
+        eprintln!("error: failed to read run file '{path}': {e}");
         std::process::exit(1);
     });
     serde_json::from_str(&content).unwrap_or_else(|e| {
-        eprintln!("error: failed to parse '{path}': {e}");
+        eprintln!("error: failed to parse run file '{path}': {e}");
         std::process::exit(1);
     })
 }
@@ -168,5 +195,40 @@ pub fn execute(args: CompareArgs) {
             &v2,
             &delta_bytes(r1.avg_memory_bytes, r2.avg_memory_bytes),
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn run_detail_converts_to_compare_record() {
+        let detail = store::RunDetail {
+            id: "run-1".to_string(),
+            timestamp: 1,
+            source: "run".to_string(),
+            command: Some("cargo test".to_string()),
+            pid: None,
+            process_name: None,
+            exit_code: Some(0),
+            duration_ms: 1234,
+            peak_cpu: 42.0,
+            avg_cpu: 21.0,
+            peak_memory_bytes: 4096,
+            avg_memory_bytes: 2048,
+            samples: vec![],
+        };
+
+        let record = RunRecord::from(detail);
+
+        assert_eq!(record.command.as_deref(), Some("cargo test"));
+        assert_eq!(record.pid, None);
+        assert_eq!(record.process_name, None);
+        assert_eq!(record.duration_ms, 1234);
+        assert_eq!(record.peak_cpu, 42.0);
+        assert_eq!(record.avg_cpu, 21.0);
+        assert_eq!(record.peak_memory_bytes, 4096);
+        assert_eq!(record.avg_memory_bytes, 2048);
     }
 }
